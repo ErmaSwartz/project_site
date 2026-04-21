@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Methods — Transit Access Analysis</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .chart-wrap {
+      width: 100%;
+      height: 480px;
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      background: var(--beige);
+      display: block;
+      margin: 28px 0 8px;
+    }
+    .chart-caption {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 52px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chart-caption span {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .methods-body { max-width: 760px; }
+    .methods-body p {
+      font-size: 15px;
+      color: var(--ink2);
+      line-height: 1.82;
+      margin-bottom: 18px;
+    }
+    .methods-body ul { padding-left: 20px; margin-bottom: 20px; }
+    .methods-body li {
+      font-size: 15px;
+      color: var(--ink2);
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+    .methods-body strong { color: var(--ink); font-weight: 500; }
+    .methods-body code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--beige);
+      padding: 1px 5px;
+      border-radius: 2px;
+    }
+
+    .inline-stats {
+      display: flex;
+      gap: 3px;
+      margin: 28px 0 32px;
+    }
+    .inline-stat {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--rule);
+      padding: 20px 22px;
+      position: relative;
+    }
+    .inline-stat::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--bronze);
+    }
+    .inline-stat .val {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .inline-stat .lbl {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--bronze);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      margin-top: 28px;
+    }
+
+    .section-block {
+      padding-top: 60px;
+      border-top: 1px solid var(--rule);
+      margin-top: 60px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .section-block:nth-child(1) { animation-delay: 0.2s; }
+    .section-block:nth-child(2) { animation-delay: 0.3s; }
+    .section-block:nth-child(3) { animation-delay: 0.4s; }
+    .section-block:nth-child(4) { animation-delay: 0.5s; }
+    .section-block:nth-child(5) { animation-delay: 0.6s; }
+    .section-block:nth-child(6) { animation-delay: 0.7s; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Transit Access — NNJ</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="methods.html" class="active">Methods</a></li>
+    <li><a href="findings.html">Findings</a></li>
+    <li><a href="maps/gap.html">Maps</a></li>
+    <li><a href="maps/scenarios.html">Scenarios</a></li>
+  </ul>
+</nav>
+
+<header class="page-header">
+  <p class="eyebrow">Analytical Approach &nbsp;·&nbsp; Spatial + ML</p>
+  <h1>How the<br>analysis <em>works</em></h1>
+  <p class="lead">
+    Spatial data engineering, OLS regression for interpretability, and Random Forest
+    for prediction — designed to surface both what drives transit use and where
+    targeted investment will have the greatest effect.
+  </p>
+</header>
+
+<section class="content">
+
+  <!-- ── 01 DATA & FEATURE ENGINEERING ── -->
+  <div class="section-block">
+    <p class="section-label">01 — Data &amp; Feature Engineering</p>
+    <div class="methods-body">
+      <p>
+        A tract-level dataset was assembled by integrating three primary sources:
+        demographic and commuting data from the <strong>American Community Survey 2024</strong>,
+        NJ Transit infrastructure GIS files, and 2025 TIGER/Line census tract geometries.
+        The result is 2,181 rows with 39 attributes per tract.
+      </p>
+
+      <p class="step-num">ACS Variables</p>
+      <p>
+        From the ACS, we draw commute mode shares (transit, drive, walk, bike),
+        workforce size, median household income, median age, and demographic shares
+        (pct_black, pct_hispanic, pct_foreign_born). The target variable,
+        <span class="hi">transit_share</span>, is the share of employed residents
+        who commute by public transportation.
+      </p>
+
+      <p class="step-num">Transit Infrastructure</p>
+      <p>
+        Bus stop locations come from NJ Transit's <em>BASEGIS.BUS_STOPS_BY_LINE</em>
+        dataset — over 31,000 stop points statewide. Rail and light rail stations were
+        sourced from separate NJTransit GIS layers. All spatial operations were
+        performed in <strong>EPSG:3424</strong> (NJ State Plane, US Survey Feet)
+        for accurate distance calculations.
+      </p>
+
+      <p class="step-num">Engineered Spatial Features</p>
+      <p>
+        Three spatial accessibility features were computed to move beyond raw stop
+        counts and capture how accessible transit actually is in practice:
+      </p>
+      <ul>
+        <li>
+          <strong>dist_to_bus</strong> — straight-line distance from each tract centroid
+          to the nearest bus stop, via <code>sjoin_nearest</code> in GeoPandas. Units: feet.
+        </li>
+        <li>
+          <strong>dist_to_rail</strong> — same computation for the nearest rail or light
+          rail station. Captures access to the higher-capacity, longer-distance network.
+        </li>
+        <li>
+          <strong>bus_density_2mi</strong> — count of bus stops within a 3,218-meter
+          (~2-mile) buffer of each tract centroid. Captures network coverage depth,
+          not just proximity to a single stop.
+        </li>
+      </ul>
+      <p>
+        These three features consistently rank as the most predictive variables across
+        both models — outperforming every demographic variable individually.
+      </p>
+    </div>
+
+    <div class="inline-stats">
+      <div class="inline-stat">
+        <div class="val">2,181</div>
+        <div class="lbl">Census Tracts</div>
+      </div>
+      <div class="inline-stat">
+        <div class="val">31k+</div>
+        <div class="lbl">Bus Stop Points</div>
+      </div>
+      <div class="inline-stat">
+        <div class="val">39</div>
+        <div class="lbl">Attributes per Tract</div>
+      </div>
+      <div class="inline-stat">
+        <div class="val">3</div>
+        <div class="lbl">Engineered Features</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 02 OLS REGRESSION ── -->
+  <div class="section-block">
+    <p class="section-label">02 — OLS Regression</p>
+    <div class="methods-body">
+      <p>
+        An Ordinary Least Squares model was estimated with <strong>10 predictors</strong>
+        and <strong>transit_share</strong> as the outcome. OLS is used for
+        <em>interpretability</em>: coefficients directly show each predictor's direction
+        and relative magnitude. R² = <strong>0.56</strong> — 56% of tract-level variance
+        in transit use explained by infrastructure access and demographics alone.
+      </p>
+      <ul>
+        <li>
+          <span class="hi">dist_to_bus</span> and <span class="hi">dist_to_rail</span>
+          carry <strong>negative coefficients</strong> (p &lt; 0.001): greater distance
+          reduces ridership. Each additional mile from the nearest stop corresponds to
+          a measurable decrease in transit share.
+        </li>
+        <li>
+          <span class="hi">bus_density_2mi</span> carries the <strong>largest positive
+          coefficient</strong>: more stops within reach means higher ridership, independent
+          of how close the nearest individual stop is.
+        </li>
+        <li>
+          Demographic variables (income, race shares, foreign-born share) are statistically
+          significant but carry smaller coefficients — secondary to infrastructure access.
+        </li>
+      </ul>
+      <p>
+        OLS sets the interpretable baseline. Its limitations — no nonlinear terms, no
+        interaction effects — motivate the Random Forest model.
+      </p>
+    </div>
+
+    <iframe
+      class="chart-wrap"
+      src="outputs/ols_plot.html"
+      loading="lazy"
+      title="OLS Coefficient Chart"
+    ></iframe>
+    <div class="chart-caption">
+      Fig. 1 — OLS coefficient estimates with 95% confidence intervals. Infrastructure access variables dominate.
+      <span>R² = 0.56 &nbsp;·&nbsp; n = 2,165</span>
+    </div>
+  </div>
+
+  <!-- ── 03 RANDOM FOREST ── -->
+  <div class="section-block">
+    <p class="section-label">03 — Random Forest</p>
+    <div class="methods-body">
+      <p>
+        A Random Forest regressor (200 trees, max depth 10) was trained on the same
+        10 features. Random Forest captures <strong>nonlinear relationships</strong>
+        and <strong>feature interactions</strong> that OLS cannot — including the sharp
+        ridership threshold that emerges past a certain distance from transit stops.
+      </p>
+      <p>
+        The model achieves <strong>R² = 0.65</strong> — a 16% relative improvement over OLS
+        on the same data. Feature importance scores reveal a stark concentration of
+        predictive power:
+      </p>
+      <ul>
+        <li>
+          <span class="hi">bus_density_2mi</span> accounts for approximately
+          <strong>58% of total feature importance</strong> — more than all other variables
+          combined. Network coverage depth is what determines whether people ride transit.
+        </li>
+        <li>
+          <span class="hi">dist_to_bus</span> and <span class="hi">dist_to_rail</span>
+          are the 2nd and 3rd most important features, contributing ~22% of importance together.
+        </li>
+        <li>
+          All demographic variables combined contribute less than 20%. No single demographic
+          feature exceeds 8% importance — confirming that demographics identify <em>who needs</em>
+          transit, not <em>whether transit is available</em>.
+        </li>
+      </ul>
+      <p>
+        The model is used to generate <span class="hi">predicted_transit_share</span>
+        for all 2,181 tracts, which feeds directly into gap analysis and scenario modeling.
+      </p>
+    </div>
+
+    <iframe
+      class="chart-wrap"
+      src="outputs/rf_plot.html"
+      loading="lazy"
+      title="Random Forest Feature Importance"
+    ></iframe>
+    <div class="chart-caption">
+      Fig. 2 — RF feature importance scores. Bus stop density within 2 miles dominates.
+      <span>R² = 0.65 &nbsp;·&nbsp; 200 trees &nbsp;·&nbsp; max depth 10</span>
+    </div>
+  </div>
+
+  <!-- ── 04 GAP ANALYSIS ── -->
+  <div class="section-block">
+    <p class="section-label">04 — Gap Analysis</p>
+    <div class="methods-body">
+      <p>
+        The <strong>transit gap</strong> is computed as:
+      </p>
+      <p style="padding-left: 28px; font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--accent); margin: 16px 0 20px;">
+        gap = predicted_transit_share − transit_share
+      </p>
+      <p>
+        A <strong>positive gap</strong> identifies suppressed demand — the model expects
+        higher ridership than is observed, meaning infrastructure is the binding constraint.
+        These are not low-demand areas; they are access-constrained areas. A
+        <strong>negative gap</strong> signals overperformance — tracts where ridership
+        exceeds what the infrastructure profile alone would predict, often due to
+        transit-oriented density, employer subsidies, or strong network connections.
+      </p>
+      <p>
+        The scatter below plots actual vs predicted transit share for all 2,165 modeled tracts.
+        Points above the diagonal are in the gap. The color gradient — from dark (underperforming)
+        through neutral to orange-red (highest suppressed demand) — makes the opportunity zones
+        immediately visible. These tracts are the spatial input for all three investment scenarios.
+      </p>
+    </div>
+
+    <iframe
+      class="chart-wrap"
+      src="outputs/scatter_fit.html"
+      loading="lazy"
+      title="Actual vs Predicted Transit Share"
+    ></iframe>
+    <div class="chart-caption">
+      Fig. 3 — Actual vs predicted transit share. Orange-red points above the diagonal = suppressed demand tracts.
+      <span>2,165 tracts &nbsp;·&nbsp; color = gap magnitude</span>
+    </div>
+  </div>
+
+  <!-- ── 05 DISTANCE THRESHOLD ── -->
+  <div class="section-block">
+    <p class="section-label">05 — The Distance–Ridership Threshold</p>
+    <div class="methods-body">
+      <p>
+        One of the most actionable findings in this analysis is that the relationship
+        between distance and ridership is <strong>not linear</strong>. Beyond approximately
+        <strong>1 mile</strong> from the nearest bus stop, transit share drops sharply —
+        a threshold effect that Random Forest captures and OLS misses.
+      </p>
+      <p>
+        The chart below plots <span class="hi">dist_to_bus</span> (in miles) against
+        <span class="hi">transit_share</span>, colored by <span class="hi">bus_density_2mi</span>.
+        The pattern is consistent across the 2,165-tract sample: high-ridership tracts cluster
+        near zero distance in high-density service areas. Past the 1-mile mark, ridership
+        converges toward zero regardless of density.
+      </p>
+      <p>
+        This finding shapes the targeting logic in Scenario 2 (Targeted Bus Investment):
+        new stops are placed in high-demand, high-gap tracts where distance currently
+        exceeds the threshold — the zone where gap-filling converts most efficiently to
+        new ridership.
+      </p>
+    </div>
+
+    <iframe
+      class="chart-wrap"
+      src="outputs/dist_ridership.html"
+      loading="lazy"
+      title="Distance to Bus vs Transit Share"
+    ></iframe>
+    <div class="chart-caption">
+      Fig. 4 — Distance to nearest bus stop vs transit share. Ridership falls sharply past 1 mile.
+      <span>Color = bus density within 2 mi &nbsp;·&nbsp; 2,165 tracts</span>
+    </div>
+  </div>
+
+  <!-- ── SUMMARY CARD ── -->
+  <div class="cards" style="margin-top: 60px;">
+    <div class="card col-12 card-dark" style="animation-delay: 0.3s;">
+      <p class="card-num">Methodological Takeaway</p>
+      <h3>Two models, one result: infrastructure access explains ridership better than demographics alone.</h3>
+      <p>
+        OLS provides interpretability and confirms the sign and significance of each variable's effect.
+        Random Forest improves predictive accuracy by 16% and surfaces the dominance of bus density
+        (58% of feature importance) and a nonlinear distance threshold that OLS cannot model.
+        Gap analysis converts predictions into a spatial investment priority map. The methodology
+        is designed to move directly from data to planning decision — not to demonstrate modeling
+        sophistication, but to identify where investment changes behavior.
+      </p>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>Methods &nbsp;·&nbsp; OLS + Random Forest + Gap Analysis</span>
+</footer>
+
+</body>
+</html>

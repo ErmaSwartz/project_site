@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Findings — Transit Access Analysis</title>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .finding:nth-child(1) { animation-delay: 0.2s; }
+    .finding:nth-child(2) { animation-delay: 0.32s; }
+    .finding:nth-child(3) { animation-delay: 0.44s; }
+    .finding:nth-child(4) { animation-delay: 0.56s; }
+    .finding:nth-child(5) { animation-delay: 0.68s; }
+    .finding:nth-child(6) { animation-delay: 0.80s; }
+
+    .tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+    .tag-access  { background: var(--green);  color: var(--accent); }
+    .tag-model   { background: var(--beige);  color: var(--accent); }
+    .tag-spatial { background: var(--papaya); color: #7a4a20; }
+    .tag-policy  { background: var(--ink);    color: var(--bronze); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Transit Access — NNJ</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Overview</a></li>
+    <li><a href="methods.html">Methods</a></li>
+    <li><a href="findings.html" class="active">Findings</a></li>
+    <li><a href="maps/gap.html">Maps</a></li>
+    <li><a href="maps/scenarios.html">Scenarios</a></li>
+  </ul>
+</nav>
+
+<header class="page-header">
+  <p class="eyebrow">Key Findings</p>
+  <h1>What the data<br>actually shows</h1>
+  <p class="lead">Six findings, ordered by importance. The core result is consistent: infrastructure access is the primary lever. Demographics reflect need, not supply.</p>
+</header>
+
+<section class="pullquote">
+  <blockquote>
+    Suppressed demand is not the same as absent demand. The gap between predicted and actual ridership is an infrastructure problem — and an investment opportunity.
+  </blockquote>
+</section>
+
+<section class="content">
+  <p class="section-label">Findings</p>
+
+  <div class="finding">
+    <span class="finding-num">01</span>
+    <div>
+      <span class="tag tag-access">Accessibility</span>
+      <h3>Distance and density outperform simple stop counts</h3>
+      <p>
+        The most predictive variables are not raw infrastructure counts, but <strong>how close</strong> and <strong>how dense</strong> transit service is. <span class="hi">dist_to_bus</span>, <span class="hi">dist_to_rail</span>, and <span class="hi">bus_density_2mi</span> consistently dominate both the OLS and Random Forest models. <span class="hi">bus_density_2mi</span> alone accounts for <strong>approximately 58% of total Random Forest feature importance</strong> — more than all other variables combined. A tract with many stops far away underperforms a tract with fewer stops that are nearby and walkable.
+      </p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-num">02</span>
+    <div>
+      <span class="tag tag-model">Model Result</span>
+      <h3>Bus density within 2 miles is the single strongest predictor</h3>
+      <p>
+        Across both models, <span class="hi">bus_density_2mi</span> ranks as the top feature by importance and significance. Tracts in the top quartile of bus density average <strong>3–4× the transit share</strong> of tracts in the bottom quartile. This is not a marginal effect — it reflects a structural difference in how accessible the network is in practice. Service needs to be <em>abundant</em> within walking and cycling range, not just present somewhere in the vicinity.
+      </p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-num">03</span>
+    <div>
+      <span class="tag tag-access">Accessibility</span>
+      <h3>Distance is a barrier — and there's a threshold</h3>
+      <p>
+        The relationship between distance and ridership is not linear. Beyond approximately <strong>1 mile</strong> from the nearest bus stop, transit share drops sharply — a threshold effect that Random Forest captures and OLS misses. Tracts past the 1-mile mark show near-zero ridership regardless of other favorable conditions. This has a direct implication for service design: closing access gaps in the 0.5–1.5 mile range produces far greater ridership returns than expanding service in already well-served areas.
+      </p>
+    </div>
+  </div>
+
+  <div style="margin: 0 0 8px; padding: 20px 28px 0;">
+    <p style="font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 8px;">Supporting visual — Finding 03</p>
+    <iframe
+      src="outputs/dist_ridership.html"
+      style="width:100%; height:400px; border:1px solid var(--rule); border-radius:3px; display:block; background:var(--beige);"
+      loading="lazy"
+      title="Distance to Bus vs Transit Share"
+    ></iframe>
+    <p style="font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; margin-top: 8px; margin-bottom: 40px;">
+      Distance to nearest bus stop (miles) vs transit commute share. Color = bus stop density within 2 miles. Ridership collapses past the 1-mile mark.
+    </p>
+  </div>
+
+  <div class="finding">
+    <span class="finding-num">04</span>
+    <div>
+      <span class="tag tag-model">Model Result</span>
+      <h3>Demographics indicate demand — they cannot create access</h3>
+      <p>
+        Socioeconomic variables (income, race, foreign-born share) are statistically significant but secondary. All demographic features combined contribute less than <strong>20% of Random Forest feature importance</strong>; no single variable exceeds 8%. They reflect <em>who needs transit</em>, not <em>whether transit is available</em>. High-need communities with poor infrastructure still underperform on ridership. This reframes the equity argument: demographic targeting identifies <em>where to look</em>, but supply-side investment is the actual lever.
+      </p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-num">05</span>
+    <div>
+      <span class="tag tag-spatial">Spatial Gap</span>
+      <h3>Suppressed demand clusters in identifiable places</h3>
+      <p>
+        By comparing <strong>predicted transit share</strong> (from the Random Forest model) to <strong>actual observed ridership</strong>, the analysis surfaces tracts with significant positive residuals — places where the model expects high usage but observes low usage. These are not low-demand areas; they are <em>infrastructure-constrained</em> areas. They are not randomly distributed: they concentrate in <strong>middle-ring suburbs</strong> with fragmented bus networks — particularly in Bergen, Morris, Somerset, and Middlesex counties — where demand exists but the network has not kept up. The gap map is the most actionable output of this project.
+      </p>
+    </div>
+  </div>
+
+  <div class="finding">
+    <span class="finding-num">06</span>
+    <div>
+      <span class="tag tag-policy">Policy Implication</span>
+      <h3>Targeted investment outperforms blanket expansion</h3>
+      <p>
+        Scenario modeling confirms the core finding: a uniform +20% bus stop increase (Scenario 1) distributes modest gains across already-served areas. Concentrating that same investment in high-predicted-demand, low-access tracts (Scenario 2) produces <strong>substantially higher average ridership gains</strong> — because it targets tracts near or past the 1-mile distance threshold, where new access directly converts to new ridership. The optimal strategy is a <strong>hybrid</strong>: targeted bus expansion (Scenario 2) first, followed by rail improvements (Scenario 3) in the corridors where a denser bus network already brings riders to stations.
+      </p>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <p class="section-label" style="margin-top: 60px;">Summary</p>
+  <div class="cards">
+    <div class="card col-12 card-dark">
+      <p class="card-num">The Central Argument</p>
+      <h3>Where transit is close and dense, people ride it. Where it isn't, they don't — not because they don't want to, but because it isn't there.</h3>
+      <p>
+        The data is unambiguous: bus stop density within 2 miles (58% of RF feature importance)
+        and distance to the nearest stop explain far more variance in ridership than income,
+        race, or age — individually or combined. The planning implication is direct: investment
+        decisions are behavior-shaping decisions. Demographic maps reveal <em>who needs transit</em>;
+        the gap map reveals <em>where to build</em>. Prioritize the gap zones. Target the areas
+        where infrastructure is the binding constraint, not the absence of demand.
+      </p>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>Findings &nbsp;·&nbsp; 6 Key Results</span>
+</footer>
+
+</body>
+</html>

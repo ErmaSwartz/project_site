@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Maps — Transit Access Analysis</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 10px 22px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active {
+      color: var(--ink);
+      border-bottom-color: var(--bronze);
+    }
+
+    .map-panel { display: none; }
+    .map-panel.active { display: block; }
+
+    .map-frame {
+      width: 100%;
+      height: 600px;
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      background: var(--beige);
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .map-meta { margin-bottom: 52px; }
+    .map-meta-title {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+    .map-meta-desc {
+      font-size: 14px;
+      color: var(--ink2);
+      line-height: 1.75;
+      max-width: 660px;
+      margin-bottom: 10px;
+    }
+    .map-meta-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--rule);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .map-meta-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .map-meta-src {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-brand">Transit Access — NNJ</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Overview</a></li>
+    <li><a href="../methods.html">Methods</a></li>
+    <li><a href="../findings.html">Findings</a></li>
+    <li><a href="gap.html" class="active">Maps</a></li>
+    <li><a href="scenarios.html">Scenarios</a></li>
+  </ul>
+</nav>
+
+<header class="page-header">
+  <p class="eyebrow">Choropleth Explorer &nbsp;·&nbsp; 2,181 Census Tracts</p>
+  <h1>Current conditions<br>across <em>Northern NJ</em></h1>
+  <p class="lead">
+    Four views of the same geography: observed ridership, model predictions,
+    accessibility infrastructure, and the gap between potential and reality.
+    Use the tabs to switch between layers.
+  </p>
+</header>
+
+<section class="content">
+  <p class="section-label">Map Explorer</p>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" role="tab" data-tab="gap"       aria-selected="true" >Transit Gap</button>
+    <button class="tab-btn"        role="tab" data-tab="actual"    aria-selected="false">Actual Ridership</button>
+    <button class="tab-btn"        role="tab" data-tab="predicted" aria-selected="false">Predicted Ridership</button>
+    <button class="tab-btn"        role="tab" data-tab="access"    aria-selected="false">Accessibility</button>
+  </div>
+
+  <!-- ── PANEL: GAP (loads immediately) ── -->
+  <div class="map-panel active" id="panel-gap" role="tabpanel">
+    <iframe
+      class="map-frame"
+      id="frame-gap"
+      src="../outputs/transit_gap_map.html"
+      title="Transit Gap Map"
+    ></iframe>
+    <div class="map-meta">
+      <p class="map-meta-title">Transit Gap — Suppressed Demand</p>
+      <p class="map-meta-desc">
+        The gap between <em>predicted</em> and <em>actual</em> transit share.
+        Warm-colored tracts (orange-red) are where the Random Forest model expects
+        significantly higher ridership than observed — areas where access constraints,
+        not lack of demand, are suppressing ridership. These are the highest-priority
+        zones for targeted investment. Cool or neutral tracts are either well-served
+        or accurately predicted by the model.
+      </p>
+      <div class="map-meta-footer">
+        <span class="map-meta-tag">Predicted − Actual &nbsp;·&nbsp; Random Forest R² = 0.65</span>
+        <span class="map-meta-src">2,165 tracts &nbsp;·&nbsp; 16 excluded (no commuter data)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL: ACTUAL (lazy) ── -->
+  <div class="map-panel" id="panel-actual" role="tabpanel">
+    <iframe
+      class="map-frame"
+      id="frame-actual"
+      data-src="../outputs/map_actual.html"
+      title="Actual Transit Share"
+    ></iframe>
+    <div class="map-meta">
+      <p class="map-meta-title">Actual Transit Share</p>
+      <p class="map-meta-desc">
+        Observed transit commute share from ACS 2024 — the share of employed
+        residents who travel to work by public transportation. Concentrations
+        in Hudson, Essex, and Union counties reflect dense bus and rail service.
+        Suburban and exurban tracts in Bergen, Morris, Somerset, and Middlesex
+        show sharply lower shares, where car dependence dominates.
+      </p>
+      <div class="map-meta-footer">
+        <span class="map-meta-tag">ACS 2024 &nbsp;·&nbsp; Transit Commute Share (transit_share)</span>
+        <span class="map-meta-src">Source: US Census Bureau &nbsp;·&nbsp; 5-Year Estimates</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL: PREDICTED (lazy) ── -->
+  <div class="map-panel" id="panel-predicted" role="tabpanel">
+    <iframe
+      class="map-frame"
+      id="frame-predicted"
+      data-src="../outputs/map_predicted.html"
+      title="Predicted Transit Share"
+    ></iframe>
+    <div class="map-meta">
+      <p class="map-meta-title">Predicted Transit Share</p>
+      <p class="map-meta-desc">
+        Random Forest model estimates of transit share for all 2,181 tracts, based
+        on infrastructure access (dist_to_bus, dist_to_rail, bus_density_2mi) and
+        demographics. Compare this map to Actual Ridership: where predicted values
+        exceed actual values, the model is identifying suppressed demand — areas
+        where infrastructure is the binding constraint, not lack of need.
+        These tracts form the investment priority map.
+      </p>
+      <div class="map-meta-footer">
+        <span class="map-meta-tag">Random Forest Model &nbsp;·&nbsp; R² = 0.65 &nbsp;·&nbsp; 10 Features</span>
+        <span class="map-meta-src">200 trees &nbsp;·&nbsp; max depth 10 &nbsp;·&nbsp; trained on 2,165 tracts</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PANEL: ACCESS (lazy) ── -->
+  <div class="map-panel" id="panel-access" role="tabpanel">
+    <iframe
+      class="map-frame"
+      id="frame-access"
+      data-src="../outputs/map_access.html"
+      title="Bus Accessibility Map"
+    ></iframe>
+    <div class="map-meta">
+      <p class="map-meta-title">Bus Stop Density — 2-Mile Buffer</p>
+      <p class="map-meta-desc">
+        Count of NJ Transit bus stops within 2 miles of each tract centroid.
+        This was the single most important predictor in both OLS and Random Forest
+        models, accounting for approximately 58% of Random Forest feature importance.
+        The map reveals the dramatic contrast between urban cores (hundreds of stops
+        within reach) and outer suburbs (fewer than ten). This density gap directly
+        maps to the ridership gap.
+      </p>
+      <div class="map-meta-footer">
+        <span class="map-meta-tag">Top RF Feature &nbsp;·&nbsp; 58% Feature Importance</span>
+        <span class="map-meta-src">Source: NJ Transit BASEGIS &nbsp;·&nbsp; 31,000+ stops</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>Maps &nbsp;·&nbsp; Choropleth Explorer</span>
+</footer>
+
+<script>
+  const tabs   = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.map-panel');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      panels.forEach(p => p.classList.remove('active'));
+      const activePanel = document.getElementById('panel-' + target);
+      activePanel.classList.add('active');
+
+      // Lazy src injection — load iframe only on first click
+      const frame = document.getElementById('frame-' + target);
+      if (frame && frame.dataset.src && !frame.getAttribute('src')) {
+        frame.src = frame.dataset.src;
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

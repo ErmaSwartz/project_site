@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scenarios — Transit Access Analysis</title>
+  <link rel="stylesheet" href="../shared.css"/>
+  <style>
+    .scenario-frame {
+      width: 100%;
+      height: 460px;
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      background: var(--beige);
+      display: block;
+      margin: 24px 0 8px;
+    }
+
+    .scenario-frame-caption {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 0;
+    }
+
+    /* Override dark card caption color */
+    .scenario-best .scenario-frame-caption { color: #5a5448; }
+
+    .compare-table {
+      width: 100%;
+      max-width: 760px;
+      border-collapse: collapse;
+      margin: 20px 0 0;
+    }
+    .compare-table th {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--rule);
+      font-weight: 400;
+    }
+    .compare-table td {
+      font-size: 13px;
+      color: var(--ink2);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+      line-height: 1.6;
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { font-family: var(--mono); font-size: 11px; color: var(--bronze); }
+    .compare-table .best-row td { color: var(--ink); font-weight: 500; }
+    .compare-table .best-row td:first-child { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-brand">Transit Access — NNJ</a>
+  <ul class="nav-links">
+    <li><a href="../index.html">Overview</a></li>
+    <li><a href="../methods.html">Methods</a></li>
+    <li><a href="../findings.html">Findings</a></li>
+    <li><a href="gap.html">Maps</a></li>
+    <li><a href="scenarios.html" class="active">Scenarios</a></li>
+  </ul>
+</nav>
+
+<header class="page-header">
+  <p class="eyebrow">Investment Scenarios &nbsp;·&nbsp; Random Forest Simulation</p>
+  <h1>What happens<br>when we <em>invest</em>?</h1>
+  <p class="lead">
+    Three transit investment strategies, each modeled by perturbing infrastructure
+    inputs and re-running the Random Forest model. Each map shows predicted ridership
+    change relative to current conditions.
+  </p>
+</header>
+
+<section class="pullquote">
+  <blockquote>
+    A targeted approach — concentrated in high-demand, low-access tracts — produces
+    substantially greater ridership gains than uniform system-wide expansion with the
+    same infrastructure investment.
+  </blockquote>
+</section>
+
+<section class="content">
+  <p class="section-label">Scenario Comparison</p>
+
+  <!-- COMPARISON TABLE -->
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Strategy</th>
+        <th>Intervention</th>
+        <th>Reach</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>S1</td>
+        <td>Blanket Bus Expansion</td>
+        <td>+20% bus stops, density, −20% dist_to_bus, all tracts</td>
+        <td>System-wide</td>
+        <td>Modest, diffuse gains</td>
+      </tr>
+      <tr class="best-row">
+        <td>S2 ★</td>
+        <td>Targeted Bus Investment</td>
+        <td>+50% bus stops/density, −40% dist_to_bus in top-quartile demand, low-access tracts</td>
+        <td>Targeted</td>
+        <td>Highest avg. gain</td>
+      </tr>
+      <tr>
+        <td>S3</td>
+        <td>Targeted Rail Expansion</td>
+        <td>+1 rail station, −40% dist_to_rail in highest predicted-share tracts</td>
+        <td>Corridor-specific</td>
+        <td>Concentrated gains</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="section-label" style="margin-top: 52px;">Scenario Detail</p>
+
+  <!-- SCENARIO 1 -->
+  <div class="scenario" style="animation-delay: 0.3s;">
+    <p class="scenario-tag">Scenario 01 &nbsp;·&nbsp; Blanket Expansion</p>
+    <h3>Uniform Bus Infrastructure Increase (+20%)</h3>
+    <p>
+      Bus stops increased by 20% system-wide, bus density scaled proportionally,
+      and average distance to the nearest stop reduced by 20% across all 2,181 tracts.
+      This represents the default planning approach: grow the network uniformly and
+      let ridership follow.
+    </p>
+    <p>
+      The resulting map shows modest gains distributed broadly across the region.
+      The largest absolute impacts appear in areas where baseline service is already
+      reasonable — a predictable pattern, since well-served tracts sit on the steeper
+      part of the density-ridership curve. Low-access tracts improve, but not enough
+      to cross the 1-mile threshold where ridership meaningfully increases.
+    </p>
+    <span class="scenario-result">Avg. predicted gain: modest &nbsp;·&nbsp; broad distribution</span>
+
+    <iframe
+      class="scenario-frame"
+      src="../outputs/map_s1.html"
+      loading="lazy"
+      title="Scenario 1: Blanket Bus Expansion"
+    ></iframe>
+    <p class="scenario-frame-caption">
+      Predicted change in transit share — Scenario 1 vs. baseline &nbsp;·&nbsp; Uniform +20% bus infrastructure
+    </p>
+  </div>
+
+  <!-- SCENARIO 2 — BEST / DARK -->
+  <div class="scenario scenario-best" style="animation-delay: 0.45s;">
+    <p class="scenario-tag">Scenario 02 &nbsp;·&nbsp; Recommended Strategy</p>
+    <h3>Targeted Bus Investment in High-Demand, Low-Access Tracts</h3>
+    <p>
+      Bus improvements are concentrated in tracts that are simultaneously in the
+      <strong>top quartile of a composite demand score</strong> (weighted by workforce
+      size, demographics, and proximity to employment) and in the <strong>bottom
+      half of existing bus density</strong>. In target tracts only: bus stops +50%,
+      density +50%, distance to nearest stop −40%.
+    </p>
+    <p>
+      This scenario consistently produces the <strong>highest average predicted
+      ridership gain</strong> across the modeled population — while touching fewer
+      tracts than Scenario 1. The efficiency difference is substantial: same investment
+      magnitude, concentrated where the model says it converts most reliably into
+      behavior change. This is what gap analysis enables.
+    </p>
+    <span class="scenario-result">Highest avg. impact &nbsp;·&nbsp; best investment efficiency ★</span>
+
+    <iframe
+      class="scenario-frame"
+      src="../outputs/map_s2.html"
+      loading="lazy"
+      title="Scenario 2: Targeted Bus Investment"
+    ></iframe>
+    <p class="scenario-frame-caption">
+      Predicted change in transit share — Scenario 2 vs. baseline &nbsp;·&nbsp; Targeted bus in high-gap tracts
+    </p>
+  </div>
+
+  <!-- SCENARIO 3 -->
+  <div class="scenario" style="animation-delay: 0.6s;">
+    <p class="scenario-tag">Scenario 03 &nbsp;·&nbsp; Rail Expansion</p>
+    <h3>Targeted Rail Infrastructure in High-Responsiveness Corridors</h3>
+    <p>
+      Rail stations are added (+1 station) and distance to rail is reduced (−40%) in
+      tracts in the <strong>top quartile of baseline predicted transit share</strong>
+      — areas where the model already identifies strong ridership potential and where
+      rail investment is most likely to trigger a step-change in mode choice.
+    </p>
+    <p>
+      Gains are concentrated in a subset of high-responsiveness corridors. The map
+      reveals a pattern consistent with the overall findings: rail expansion alone,
+      without addressing the density of the bus network that feeds rail stations,
+      produces corridor-specific gains with limited geographic reach. The greatest
+      impact comes from combining Scenario 3 corridors with the Scenario 2 bus
+      investment strategy — a hybrid approach.
+    </p>
+    <span class="scenario-result">Concentrated gains &nbsp;·&nbsp; corridor-specific impact</span>
+
+    <iframe
+      class="scenario-frame"
+      src="../outputs/map_s3.html"
+      loading="lazy"
+      title="Scenario 3: Targeted Rail Expansion"
+    ></iframe>
+    <p class="scenario-frame-caption">
+      Predicted change in transit share — Scenario 3 vs. baseline &nbsp;·&nbsp; Rail expansion in top-predicted corridors
+    </p>
+  </div>
+
+  <!-- SUMMARY -->
+  <p class="section-label" style="margin-top: 60px;">Planning Implication</p>
+  <div class="cards">
+    <div class="card col-6 card-dark" style="animation-delay: 0.3s;">
+      <p class="card-num">The Recommendation</p>
+      <h3>Targeted beats blanket — every time.</h3>
+      <p>Scenario 2 outperforms Scenario 1 on average predicted ridership gain while
+      concentrating investment in the tracts that need it most. The gap map is the
+      decision tool: it translates model output into a spatial priority queue for
+      bus network expansion.</p>
+    </div>
+    <div class="card col-6" style="animation-delay: 0.4s;">
+      <p class="card-num">The Hybrid Strategy</p>
+      <h3>Bus first, rail to complement.</h3>
+      <p>Rail expansion (Scenario 3) produces the most impact in corridors where bus
+      density already brings riders to stations. The highest-return strategy is
+      Scenario 2 first — close the bus network gaps — then Scenario 3 in the
+      corridors where that network already performs.</p>
+    </div>
+    <div class="card col-12 card-papaya" style="animation-delay: 0.5s;">
+      <p class="card-num">Portfolio Signal</p>
+      <h3>The model is a planning instrument, not just a prediction.</h3>
+      <p>
+        These scenarios are not forecasts — they are sensitivity analyses. By perturbing
+        infrastructure inputs and re-running the Random Forest, we translate the model's
+        learned relationships into investment priorities. The approach demonstrates that
+        data science and spatial analysis can do more than describe current conditions:
+        they can simulate policy decisions and rank alternatives before a dollar is spent.
+      </p>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>Scenarios &nbsp;·&nbsp; Three Investment Strategies</span>
+</footer>
+
+</body>
+</html>

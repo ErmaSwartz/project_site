@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transit Access Analysis — Northern NJ</title>
+  <link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Transit Access — NNJ</a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Overview</a></li>
+    <li><a href="methods.html">Methods</a></li>
+    <li><a href="findings.html">Findings</a></li>
+    <li><a href="maps/gap.html">Maps</a></li>
+    <li><a href="maps/scenarios.html">Scenarios</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="page-header" style="padding-bottom: 72px;">
+  <p class="eyebrow">Spatial &amp; ML Analysis &nbsp;·&nbsp; Northern New Jersey &nbsp;·&nbsp; 2,181 Census Tracts</p>
+  <h1>
+    Where transit access<br>
+    <em>exists,</em> people use it.<br>
+    Where it doesn't, demand<br>
+    is suppressed.
+  </h1>
+  <p class="lead">
+    A spatial and machine learning analysis of transit performance across Northern New Jersey — identifying infrastructure gaps, modeling suppressed demand, and simulating targeted investments.
+  </p>
+</header>
+
+<!-- PULL QUOTE -->
+<section class="pullquote">
+  <blockquote>
+    Transit usage is driven more by accessibility — distance and density — than by demographics alone. Investment decisions directly shape behavior.
+  </blockquote>
+</section>
+
+<!-- OVERVIEW CARDS -->
+<section class="content">
+  <p class="section-label">Project Overview</p>
+  <div class="cards">
+
+    <div class="card col-8">
+      <p class="card-num">01 — What This Is</p>
+      <h3>Infrastructure access, not demographics, determines ridership</h3>
+      <p>This project combines spatial analysis, econometric modeling (OLS), and machine learning (Random Forest) to identify where transit demand exists, where access is lacking, and where targeted investments would have the greatest impact across ~2,181 census tracts in Northern New Jersey.</p>
+    </div>
+
+    <div class="card col-4 card-green">
+      <p class="card-num">Scale</p>
+      <div class="stat-val">2,181</div>
+      <p class="stat-desc">Census tracts analyzed across Northern New Jersey</p>
+    </div>
+
+    <div class="card col-4 card-papaya">
+      <p class="card-num">Data Points</p>
+      <div class="stat-val">31k+</div>
+      <p class="stat-desc">NJ Transit bus stops incorporated into accessibility metrics</p>
+    </div>
+
+    <div class="card col-4">
+      <p class="card-num">02 — Key Innovation</p>
+      <h3>Accessibility metrics, not stop counts</h3>
+      <p>Distance to nearest stop and stops within 2 miles — the two variables that explain more variance than <strong>all demographic factors combined</strong>. How close and how dense matters more than whether a stop exists.</p>
+    </div>
+
+    <div class="card col-4 card-dark">
+      <p class="card-num">RF Model Performance</p>
+      <div class="stat-val">0.65</div>
+      <p class="stat-desc">R² — Random Forest explains 65% of variance in transit share (vs 0.56 for OLS baseline)</p>
+    </div>
+
+    <div class="card col-4 card-beige">
+      <p class="card-num">Top Feature</p>
+      <div class="stat-val">58%</div>
+      <p class="stat-desc">of RF feature importance from bus stop density alone — more than all other variables combined</p>
+    </div>
+
+    <div class="card col-8">
+      <p class="card-num">03 — What Makes This Different</p>
+      <h3>Three engineered features drive the entire model</h3>
+      <p>
+        <span class="hi">dist_to_bus</span>, <span class="hi">dist_to_rail</span>, and
+        <span class="hi">bus_density_2mi</span> — computed via spatial joins in NJ State
+        Plane coordinates — account for ~80% of Random Forest feature importance.
+        Demographic variables (income, race, nativity) are included but remain secondary.
+        The analysis separates <em>who needs transit</em> from <em>whether transit exists nearby</em>.
+      </p>
+    </div>
+
+  </div>
+
+  <p class="section-label" style="margin-top: 16px;">Key Findings at a Glance</p>
+  <div class="cards">
+
+    <div class="card col-6">
+      <p class="card-num">Finding 01</p>
+      <h3>Accessibility drives transit use</h3>
+      <p>Distance and density outperform simple infrastructure counts. <span class="hi">bus_density_2mi</span> alone accounts for 58% of Random Forest feature importance — more than all demographic variables combined.</p>
+    </div>
+
+    <div class="card col-6">
+      <p class="card-num">Finding 02</p>
+      <h3>Spatial gaps are the opportunity</h3>
+      <p>Tracts with positive predicted-minus-actual gaps are not low-demand areas — they are access-constrained areas. The gap map surfaces the investment priority queue directly from model output.</p>
+    </div>
+
+    <div class="card col-6 card-beige">
+      <p class="card-num">Finding 03</p>
+      <h3>There's a 1-mile threshold</h3>
+      <p>Beyond ~1 mile from the nearest bus stop, transit share drops sharply regardless of other variables. This nonlinear effect — missed by OLS — is exactly what Random Forest captures and what targeted investment exploits.</p>
+    </div>
+
+    <div class="card col-6 card-beige">
+      <p class="card-num">Finding 04</p>
+      <h3>Targeted beats blanket expansion</h3>
+      <p>Scenario 2 (targeted bus in high-gap tracts) produces higher average ridership gains than a system-wide +20% expansion — with fewer infrastructure units. Demographics identify who needs transit; the model identifies where to build it.</p>
+    </div>
+
+  </div>
+
+  <p class="section-label" style="margin-top: 16px;">Model Diagnostic</p>
+  <div class="cards">
+    <div class="card col-12" style="padding: 0; border-color: var(--rule); overflow: hidden;">
+      <div style="padding: 24px 28px 12px; border-bottom: 1px solid var(--rule);">
+        <p class="card-num">Predicted vs Actual Transit Share — All 2,165 Tracts</p>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 640px;">
+          Points above the diagonal = suppressed demand. Orange-red tracts are where infrastructure
+          is the binding constraint. These form the spatial input for Scenario 2.
+        </p>
+      </div>
+      <iframe
+        src="outputs/scatter_fit.html"
+        style="width:100%; height:420px; border:none; display:block;"
+        loading="lazy"
+        title="Predicted vs Actual Transit Share"
+      ></iframe>
+    </div>
+  </div>
+
+  <p class="section-label" style="margin-top: 16px;">What This Demonstrates</p>
+  <div class="cards">
+    <div class="card col-12" style="background: var(--papaya); border-color: #e0d0b0;">
+      <p class="card-num">Portfolio Signal</p>
+      <h3>GIS + data science + policy reasoning, integrated end-to-end</h3>
+      <p>This project combines spatial data engineering (GeoPandas, EPSG:3424 joins), econometric modeling (OLS, statsmodels), machine learning (Random Forest, scikit-learn), and scenario simulation — then translates all of it into maps and findings a planning audience can use. The goal is not to demonstrate every technique, but to surface the insight that drives better investment decisions.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>ACS 2024 &nbsp;·&nbsp; NJ Transit &nbsp;·&nbsp; OLS + Random Forest</span>
+</footer>
+
+</body>
+</html>
