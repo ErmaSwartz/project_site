@@ -119,7 +119,7 @@
 <body>
 
 <nav>
-  <a href="index.html" class="nav-brand">Transit Access — NNJ</a>
+  <a href="index.html" class="nav-brand">Transit Access — NJ</a>
   <ul class="nav-links">
     <li><a href="index.html">Overview</a></li>
     <li><a href="methods.html" class="active">Methods</a></li>
@@ -140,6 +140,15 @@
 </header>
 
 <section class="content">
+
+  <!-- ── DATA NOTE ── -->
+  <div style="background: var(--beige); border: 1px solid var(--rule); border-left: 3px solid var(--bronze); padding: 16px 22px; margin-bottom: 48px; font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; line-height: 1.7;">
+    <strong style="color: var(--accent); display: block; margin-bottom: 4px;">Data Note</strong>
+    Total tracts in dataset: <strong style="color: var(--ink);">2,181</strong> &nbsp;·&nbsp;
+    Tracts used in models: <strong style="color: var(--ink);">2,165</strong> (16 excluded due to missing commuter data) &nbsp;·&nbsp;
+    All model outputs, predictions, and scenario results are based on the 2,165-tract sample.
+    Maps may display all 2,181 tracts for geographic completeness.
+  </div>
 
   <!-- ── 01 DATA & FEATURE ENGINEERING ── -->
   <div class="section-block">
@@ -223,30 +232,37 @@
       <p>
         An Ordinary Least Squares model was estimated with <strong>10 predictors</strong>
         and <strong>transit_share</strong> as the outcome. OLS is used for
-        <em>interpretability</em>: coefficients directly show each predictor's direction
-        and relative magnitude. R² = <strong>0.56</strong> — 56% of tract-level variance
-        in transit use explained by infrastructure access and demographics alone.
+        <em>interpretability</em>: standardized coefficients show each predictor's direction
+        and relative magnitude on a comparable scale. R² = <strong>0.556</strong> (adj. R² = 0.554) —
+        56% of tract-level variance in transit use explained by infrastructure access
+        and demographics, F(10, 2154) = 269.9, p &lt; 0.001.
       </p>
       <ul>
         <li>
-          <span class="hi">dist_to_bus</span> and <span class="hi">dist_to_rail</span>
-          carry <strong>negative coefficients</strong> (p &lt; 0.001): greater distance
-          reduces ridership. Each additional mile from the nearest stop corresponds to
-          a measurable decrease in transit share.
+          <span class="hi">bus_density_2mi</span> has the <strong>largest standardized coefficient</strong>
+          (β = 0.074, p &lt; 0.001): network coverage depth is the single strongest OLS predictor.
         </li>
         <li>
-          <span class="hi">bus_density_2mi</span> carries the <strong>largest positive
-          coefficient</strong>: more stops within reach means higher ridership, independent
-          of how close the nearest individual stop is.
+          <span class="hi">dist_to_bus</span> (β = −0.008) and <span class="hi">dist_to_rail</span>
+          (β = −0.009) are both <strong>negative and significant</strong> (p &lt; 0.001): greater
+          distance to transit consistently reduces ridership.
         </li>
         <li>
-          Demographic variables (income, race shares, foreign-born share) are statistically
-          significant but carry smaller coefficients — secondary to infrastructure access.
+          <span class="hi">pct_hispanic</span> (β = −0.032) and <span class="hi">pct_foreign_born</span>
+          (β = +0.027) are statistically significant, suggesting that nativity and ethnicity
+          interact with transit use in ways that reflect both need and network dependency.
+          <span class="hi">pct_black</span> is <em>not</em> significant (p = 0.45).
+        </li>
+        <li>
+          <span class="hi">bus_stops</span> carries a <strong>negative</strong> coefficient
+          (β = −0.011, p &lt; 0.001) — counterintuitive, but expected: once bus density is
+          controlled for, raw stop count is partly a proxy for tract size and existing
+          service saturation, not additional access.
         </li>
       </ul>
       <p>
         OLS sets the interpretable baseline. Its limitations — no nonlinear terms, no
-        interaction effects — motivate the Random Forest model.
+        interaction effects, sensitivity to multicollinearity — motivate the Random Forest model.
       </p>
     </div>
 
@@ -257,8 +273,8 @@
       title="OLS Coefficient Chart"
     ></iframe>
     <div class="chart-caption">
-      Fig. 1 — OLS coefficient estimates with 95% confidence intervals. Infrastructure access variables dominate.
-      <span>R² = 0.56 &nbsp;·&nbsp; n = 2,165</span>
+      Fig. 1 — OLS standardized coefficients with 95% confidence intervals. bus_density_2mi has the largest standardized effect.
+      <span>R² = 0.556 &nbsp;·&nbsp; Adj. R² = 0.554 &nbsp;·&nbsp; n = 2,165</span>
     </div>
   </div>
 
@@ -273,24 +289,33 @@
         ridership threshold that emerges past a certain distance from transit stops.
       </p>
       <p>
-        The model achieves <strong>R² = 0.65</strong> — a 16% relative improvement over OLS
-        on the same data. Feature importance scores reveal a stark concentration of
-        predictive power:
+        In notebook test runs (80/20 split), the model achieves <strong>R² = 0.58</strong>.
+        The model stored for prediction was trained on the full dataset (R² = 0.90 on training data),
+        which reflects overfitting — the honest held-out estimate of ~0.58 is the right benchmark.
+        Either way, it improves meaningfully over OLS (0.556) by capturing nonlinear relationships
+        and feature interactions. Feature importance scores reveal a stark concentration of predictive power:
       </p>
       <ul>
         <li>
-          <span class="hi">bus_density_2mi</span> accounts for approximately
-          <strong>58% of total feature importance</strong> — more than all other variables
-          combined. Network coverage depth is what determines whether people ride transit.
+          <span class="hi">bus_density_2mi</span> accounts for <strong>54.8% of total feature
+          importance</strong> — more than all other variables combined. Network coverage depth
+          is the dominant determinant of whether people ride transit.
         </li>
         <li>
-          <span class="hi">dist_to_bus</span> and <span class="hi">dist_to_rail</span>
-          are the 2nd and 3rd most important features, contributing ~22% of importance together.
+          <span class="hi">dist_to_rail</span> is the <strong>2nd most important feature at 10.8%</strong>.
+          Distance to rail remains independently predictive because the bus density metric does
+          not capture rail access.
         </li>
         <li>
-          All demographic variables combined contribute less than 20%. No single demographic
-          feature exceeds 8% importance — confirming that demographics identify <em>who needs</em>
-          transit, not <em>whether transit is available</em>.
+          <span class="hi">dist_to_bus</span> falls to <strong>9th at 3.3%</strong> — once bus
+          density is in the model, the nearest individual stop adds little marginal information
+          (the density measure already captures proximity implicitly).
+        </li>
+        <li>
+          Demographic variables combined account for <strong>~27% of total importance</strong>.
+          <span class="hi">pct_hispanic</span> (7.8%) and <span class="hi">pct_foreign_born</span>
+          (6.1%) are the most influential demographic predictors, reflecting both transit dependency
+          and residential patterns near transit corridors. Infrastructure accounts for the remaining ~73%.
         </li>
       </ul>
       <p>
@@ -306,8 +331,8 @@
       title="Random Forest Feature Importance"
     ></iframe>
     <div class="chart-caption">
-      Fig. 2 — RF feature importance scores. Bus stop density within 2 miles dominates.
-      <span>R² = 0.65 &nbsp;·&nbsp; 200 trees &nbsp;·&nbsp; max depth 10</span>
+      Fig. 2 — RF feature importance (10-feature model). bus_density_2mi = 54.8%; dist_to_rail = 10.8% (2nd); dist_to_bus = 3.3% (9th).
+      <span>R² ≈ 0.58 (held-out test) &nbsp;·&nbsp; 200 trees &nbsp;·&nbsp; max depth 10</span>
     </div>
   </div>
 
@@ -393,19 +418,23 @@
       <h3>Two models, one result: infrastructure access explains ridership better than demographics alone.</h3>
       <p>
         OLS provides interpretability and confirms the sign and significance of each variable's effect.
-        Random Forest improves predictive accuracy by 16% and surfaces the dominance of bus density
-        (58% of feature importance) and a nonlinear distance threshold that OLS cannot model.
+        Random Forest improves predictive accuracy (R² ≈ 0.58 vs 0.556 for OLS on held-out data)
+        and surfaces the dominance of bus density (54.8% of feature importance), the independent
+        importance of rail access (10.8%), and a nonlinear distance threshold that OLS cannot model.
         Gap analysis converts predictions into a spatial investment priority map. The methodology
-        is designed to move directly from data to planning decision — not to demonstrate modeling
-        sophistication, but to identify where investment changes behavior.
+        moves directly from data to planning decision — identifying where investment changes behavior.
       </p>
     </div>
+  </div>
+
+  <div class="next-page">
+    <a href="findings.html">See what the data found →</a>
   </div>
 
 </section>
 
 <footer>
-  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>Transit Access Analysis &nbsp;·&nbsp; New Jersey</span>
   <span>Methods &nbsp;·&nbsp; OLS + Random Forest + Gap Analysis</span>
 </footer>
 

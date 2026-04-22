@@ -61,7 +61,7 @@
 <body>
 
 <nav>
-  <a href="../index.html" class="nav-brand">Transit Access — NNJ</a>
+  <a href="../index.html" class="nav-brand">Transit Access — NJ</a>
   <ul class="nav-links">
     <li><a href="../index.html">Overview</a></li>
     <li><a href="../methods.html">Methods</a></li>
@@ -99,34 +99,42 @@
         <th>Scenario</th>
         <th>Strategy</th>
         <th>Intervention</th>
-        <th>Reach</th>
-        <th>Result</th>
+        <th>Tracts Affected</th>
+        <th>Avg. System Impact</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>S1</td>
-        <td>Blanket Bus Expansion</td>
-        <td>+20% bus stops, density, −20% dist_to_bus, all tracts</td>
-        <td>System-wide</td>
-        <td>Modest, diffuse gains</td>
-      </tr>
       <tr class="best-row">
-        <td>S2 ★</td>
+        <td>S1 ★</td>
+        <td>Blanket Bus Expansion</td>
+        <td>+20% bus stops, +20% density, −20% dist_to_bus — all tracts</td>
+        <td>All 2,165</td>
+        <td>+0.61 pp avg.</td>
+      </tr>
+      <tr>
+        <td>S2</td>
         <td>Targeted Bus Investment</td>
-        <td>+50% bus stops/density, −40% dist_to_bus in top-quartile demand, low-access tracts</td>
-        <td>Targeted</td>
-        <td>Highest avg. gain</td>
+        <td>+50% bus stops/density, −40% dist_to_bus — 215 high-need tracts only</td>
+        <td>215 (9.9%)</td>
+        <td>+0.15 pp in targets</td>
       </tr>
       <tr>
         <td>S3</td>
         <td>Targeted Rail Expansion</td>
-        <td>+1 rail station, −40% dist_to_rail in highest predicted-share tracts</td>
-        <td>Corridor-specific</td>
-        <td>Concentrated gains</td>
+        <td>+1 rail station, −40% dist_to_rail — top-quartile predicted tracts</td>
+        <td>541 (25%)</td>
+        <td>Mixed in targets</td>
       </tr>
     </tbody>
   </table>
+
+  <!-- SCENARIO DISCLAIMER -->
+  <div style="background: var(--beige); border: 1px solid var(--rule); border-left: 3px solid var(--bronze); padding: 18px 24px; margin: 24px 0 40px; max-width: 860px;">
+    <p style="font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;">Note on Scenarios</p>
+    <p style="font-size: 14px; color: var(--ink2); line-height: 1.7; margin: 0;">
+      These are not forecasts. They are sensitivity tests that estimate how ridership would respond to changes in transit access, based on relationships the model learned from current data. They show the <strong>relative impact</strong> of different investment strategies — not a predicted future state.
+    </p>
+  </div>
 
   <p class="section-label" style="margin-top: 52px;">Scenario Detail</p>
 
@@ -147,7 +155,7 @@
       part of the density-ridership curve. Low-access tracts improve, but not enough
       to cross the 1-mile threshold where ridership meaningfully increases.
     </p>
-    <span class="scenario-result">Avg. predicted gain: modest &nbsp;·&nbsp; broad distribution</span>
+    <span class="scenario-result">+0.61 pp avg. system-wide &nbsp;·&nbsp; 1,110 of 2,165 tracts improved ★</span>
 
     <iframe
       class="scenario-frame"
@@ -166,19 +174,20 @@
     <h3>Targeted Bus Investment in High-Demand, Low-Access Tracts</h3>
     <p>
       Bus improvements are concentrated in tracts that are simultaneously in the
-      <strong>top quartile of a composite demand score</strong> (weighted by workforce
-      size, demographics, and proximity to employment) and in the <strong>bottom
-      half of existing bus density</strong>. In target tracts only: bus stops +50%,
-      density +50%, distance to nearest stop −40%.
+      <strong>top quartile of a composite demand score</strong> (weighted by population,
+      pct_hispanic, and pct_foreign_born) and in the <strong>bottom half of existing
+      bus density</strong>. In target tracts only: bus stops +50%, density +50%,
+      distance to nearest stop −40%.
     </p>
     <p>
-      This scenario consistently produces the <strong>highest average predicted
-      ridership gain</strong> across the modeled population — while touching fewer
-      tracts than Scenario 1. The efficiency difference is substantial: same investment
-      magnitude, concentrated where the model says it converts most reliably into
-      behavior change. This is what gap analysis enables.
+      This scenario concentrates investment in <strong>215 high-need tracts</strong> —
+      the communities with the clearest gap between demand and access. The absolute
+      system-wide gain is smaller than Scenario 1, but the reach is equity-focused:
+      every investment unit goes toward the tracts where unmet demand is greatest.
+      This is what gap analysis enables — a spatial priority queue for investment
+      targeting rather than uniform expansion.
     </p>
-    <span class="scenario-result">Highest avg. impact &nbsp;·&nbsp; best investment efficiency ★</span>
+    <span class="scenario-result">+0.15 pp avg. in 215 targeted tracts &nbsp;·&nbsp; equity-focused reach</span>
 
     <iframe
       class="scenario-frame"
@@ -209,7 +218,7 @@
       impact comes from combining Scenario 3 corridors with the Scenario 2 bus
       investment strategy — a hybrid approach.
     </p>
-    <span class="scenario-result">Concentrated gains &nbsp;·&nbsp; corridor-specific impact</span>
+    <span class="scenario-result">Mixed results &nbsp;·&nbsp; already well-served areas show limited model responsiveness</span>
 
     <iframe
       class="scenario-frame"
@@ -226,19 +235,18 @@
   <p class="section-label" style="margin-top: 60px;">Planning Implication</p>
   <div class="cards">
     <div class="card col-6 card-dark" style="animation-delay: 0.3s;">
-      <p class="card-num">The Recommendation</p>
-      <h3>Targeted beats blanket — every time.</h3>
-      <p>Scenario 2 outperforms Scenario 1 on average predicted ridership gain while
-      concentrating investment in the tracts that need it most. The gap map is the
-      decision tool: it translates model output into a spatial priority queue for
-      bus network expansion.</p>
+      <p class="card-num">The Tradeoff</p>
+      <h3>Blanket expansion wins on volume. Targeted investment wins on equity.</h3>
+      <p>Scenario 1 produces more total ridership gain. Scenario 2 reaches the communities
+      with the greatest unmet need. The gap map is the decision tool: it translates model
+      output into a spatial priority queue that can inform either strategy.</p>
     </div>
     <div class="card col-6" style="animation-delay: 0.4s;">
       <p class="card-num">The Hybrid Strategy</p>
       <h3>Bus first, rail to complement.</h3>
       <p>Rail expansion (Scenario 3) produces the most impact in corridors where bus
       density already brings riders to stations. The highest-return strategy is
-      Scenario 2 first — close the bus network gaps — then Scenario 3 in the
+      closing the bus network gaps first (Scenario 2), then adding rail in the
       corridors where that network already performs.</p>
     </div>
     <div class="card col-12 card-papaya" style="animation-delay: 0.5s;">
@@ -257,7 +265,7 @@
 </section>
 
 <footer>
-  <span>Transit Access Analysis &nbsp;·&nbsp; Northern New Jersey</span>
+  <span>Transit Access Analysis &nbsp;·&nbsp; New Jersey</span>
   <span>Scenarios &nbsp;·&nbsp; Three Investment Strategies</span>
 </footer>
 

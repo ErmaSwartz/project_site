@@ -26,6 +26,8 @@ import geopandas as gpd
 import folium
 import numpy as np
 import plotly.graph_objects as go
+from branca.element import MacroElement
+from jinja2 import Template
 
 try:
     import joblib
@@ -43,8 +45,10 @@ DATA_PATH      = SCRIPT_DIR.parent.parent / "data" / "final_analysis_dataset.gpk
 MODEL_PATH     = OUTPUT_DIR / "rf_model.pkl"
 FEATURES_PATH  = OUTPUT_DIR / "features.json"
 
-MAP_CENTER     = [40.07, -74.72]
-MAP_ZOOM       = 9
+MAP_CENTER         = [40.07, -74.72]  # Full NJ view
+MAP_ZOOM           = 9
+MAP_CENTER_NORTH   = [40.80, -74.20]  # North NJ view for access map
+MAP_ZOOM_NORTH     = 10
 
 # Site color palette (matches shared.css)
 C_CREAM   = "#fefae0"
@@ -113,6 +117,43 @@ def add_predictions(gdf: gpd.GeoDataFrame, model, features: list) -> gpd.GeoData
     return gdf
 
 
+# ── MAP HELPERS ──────────────────────────────────────────────────────────────
+
+class LeafletScaleBar(MacroElement):
+    """Adds a Leaflet built-in scale bar to the map."""
+    def __init__(self):
+        super().__init__()
+        self._name = "LeafletScaleBar"
+        self._template = Template(u"""
+            {% macro script(this, kwargs) %}
+            L.control.scale({position: 'bottomleft', imperial: true, metric: true}).addTo({{ this._parent.get_name() }});
+            {% endmacro %}
+        """)
+
+
+def _add_north_arrow(m: folium.Map) -> None:
+    """Add a minimal north arrow HTML element to the map."""
+    arrow_html = """
+    <div style="
+        position: fixed;
+        top: 70px; right: 12px;
+        z-index: 9999;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        padding: 6px 8px 4px;
+        text-align: center;
+        font-family: serif;
+        line-height: 1.1;
+        pointer-events: none;
+    ">
+        <span style="font-size:18px; color:#444;">↑</span><br>
+        <span style="font-size:9px; font-family:monospace; color:#666;">N</span>
+    </div>
+    """
+    m.get_root().html.add_child(folium.Element(arrow_html))
+
+
 # ── CHOROPLETH MAPS ──────────────────────────────────────────────────────────
 def make_choropleth(
     gdf: gpd.GeoDataFrame,
@@ -121,9 +162,14 @@ def make_choropleth(
     fill_color: str,
     output_path: Path,
     force: bool = False,
+    center: list = None,
+    zoom: int = None,
 ) -> None:
     """
-    Create a Folium choropleth and save as standalone HTML.
+    Create a Folium choropleth with quantile classification and save as HTML.
+
+    Uses quantile bins for better contrast on skewed data. Adds scale bar,
+    north arrow, and subtle (#ffffff, weight 0.3) tract boundaries.
 
     Critical: dropna on the value column before passing to Folium — branca's
     StepColormap raises ValueError if any value in data[column] is NaN.
@@ -134,19 +180,49 @@ def make_choropleth(
 
     gdf_clean = gdf[["GEOID", column, "geometry"]].dropna(subset=[column]).copy()
 
-    m = folium.Map(location=MAP_CENTER, zoom_start=MAP_ZOOM, tiles="CartoDB positron")
+    map_center = center if center is not None else MAP_CENTER
+    map_zoom   = zoom   if zoom   is not None else MAP_ZOOM
 
-    folium.Choropleth(
+    m = folium.Map(location=map_center, zoom_start=map_zoom, tiles="CartoDB positron")
+
+    # Quantile bins for better contrast on skewed distributions
+    values = gdf_clean[column].values
+    bins = list(np.unique(np.quantile(values, [0, 0.2, 0.4, 0.6, 0.8, 1.0])))
+    # Ensure at least 2 unique bin edges (degenerate case guard)
+    if len(bins) < 2:
+        bins = [float(values.min()), float(values.max())]
+
+    choropleth = folium.Choropleth(
         geo_data=gdf_clean,
         data=gdf_clean,
         columns=["GEOID", column],
         key_on="feature.properties.GEOID",
         fill_color=fill_color,
-        fill_opacity=0.75,
-        line_opacity=0.15,
-        line_color="#888888",
+        fill_opacity=0.78,
+        line_opacity=0.0,   # suppress choropleth's own boundary; we add ours below
+        line_color="#ffffff",
         legend_name=legend_name,
+        bins=bins,
+    )
+    choropleth.add_to(m)
+
+    # Subtle white tract boundaries (weight 0.3, low opacity) on top of fill
+    folium.GeoJson(
+        gdf_clean,
+        style_function=lambda x: {
+            "fillColor": "transparent",
+            "fillOpacity": 0,
+            "color": "#ffffff",
+            "weight": 0.3,
+            "opacity": 0.4,
+        },
     ).add_to(m)
+
+    # Scale bar
+    LeafletScaleBar().add_to(m)
+
+    # North arrow
+    _add_north_arrow(m)
 
     m.save(str(output_path))
     print(f"  Saved {output_path.name}")
@@ -422,17 +498,20 @@ def main() -> None:
     )
     make_choropleth(
         gdf, "predicted_transit_share",
-        "Predicted Transit Share — Random Forest model (R² = 0.65)",
+        "Predicted Transit Share — Random Forest model (R² ≈ 0.58 held-out)",
         "YlOrRd",
         OUTPUT_DIR / "map_predicted.html",
         args.force,
     )
+    # Accessibility map: default to North NJ zoom where variation is highest
     make_choropleth(
         gdf, "bus_density_2mi",
-        "Bus Stop Density within 2 Miles — top predictor of ridership",
+        "Bus Stop Density within 2 Miles — strongest predictor of ridership (54.8% RF importance)",
         "YlGn",
         OUTPUT_DIR / "map_access.html",
         args.force,
+        center=MAP_CENTER_NORTH,
+        zoom=MAP_ZOOM_NORTH,
     )
 
     # 5. Two diagnostic Plotly charts
